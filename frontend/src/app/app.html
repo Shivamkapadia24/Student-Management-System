@@ -1,0 +1,35 @@
+<header class="mb-4">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary py-3 shadow-sm">
+    <div class="container d-flex justify-content-between align-items-center">
+      <span class="navbar-brand fs-4 fw-bold">Student Management System</span>
+      <div class="d-flex align-items-center gap-3" *ngIf="isLoggedIn">
+        <span class="text-light fw-semibold small">College: {{ collegeName }}</span>
+        <button class="btn btn-outline-light btn-sm px-3" (click)="logout()">
+          Logout
+        </button>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<!-- Show Auth panel if not logged in -->
+<app-auth *ngIf="!isLoggedIn"></app-auth>
+
+<!-- Show main content dashboard only if logged in -->
+<main class="container mb-5" *ngIf="isLoggedIn">
+  <div class="row g-4">
+    <section class="col-lg-4" *ngIf="showForm">
+      <app-student-form
+        [studentToEdit]="selectedStudent"
+        (cancelEdit)="onCancelEdit()">
+      </app-student-form>
+    </section>
+
+    <section [class]="showForm ? 'col-lg-8' : 'col-lg-12'">
+      <app-student-list
+        (editStudent)="onEditStudent($event)"
+        (addStudentClicked)="openAddForm()">
+      </app-student-list>
+    </section>
+  </div>
+</main>
