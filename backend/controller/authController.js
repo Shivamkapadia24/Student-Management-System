@@ -31,10 +31,11 @@ const login = async (req, res) => {
         }
 
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
+        const isProd = process.env.NODE_ENV === "production";
         res.cookie("auth_token", token, {
             httpOnly: true,
-            secure: false, // Set to true in production over HTTPS
-            sameSite: "lax",
+            secure: isProd,
+            sameSite: isProd ? "none" : "lax",
             maxAge: 24 * 60 * 60 * 1000 // 1 day
         });
         res.status(200).json({ username });
@@ -44,7 +45,12 @@ const login = async (req, res) => {
 };
 
 const logout = async (req, res) => {
-    res.clearCookie("auth_token");
+    const isProd = process.env.NODE_ENV === "production";
+    res.clearCookie("auth_token", {
+        httpOnly: true,
+        secure: isProd,
+        sameSite: isProd ? "none" : "lax"
+    });
     res.status(200).json({ message: "Logged out successfully" });
 };
 
