@@ -12,24 +12,4 @@
   </nav>
 </header>
 
-<!-- Show Auth panel if not logged in -->
-<app-auth *ngIf="!isLoggedIn"></app-auth>
-
-<!-- Show main content dashboard only if logged in -->
-<main class="container mb-5" *ngIf="isLoggedIn">
-  <div class="row g-4">
-    <section class="col-lg-4" *ngIf="showForm">
-      <app-student-form
-        [studentToEdit]="selectedStudent"
-        (cancelEdit)="onCancelEdit()">
-      </app-student-form>
-    </section>
-
-    <section [class]="showForm ? 'col-lg-8' : 'col-lg-12'">
-      <app-student-list
-        (editStudent)="onEditStudent($event)"
-        (addStudentClicked)="openAddForm()">
-      </app-student-list>
-    </section>
-  </div>
-</main>
+<router-outlet></router-outlet>

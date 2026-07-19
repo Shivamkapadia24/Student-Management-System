@@ -31,10 +31,21 @@ const login = async (req, res) => {
         }
 
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
-        res.status(200).json({ token, username });
+        res.cookie("auth_token", token, {
+            httpOnly: true,
+            secure: false, // Set to true in production over HTTPS
+            sameSite: "lax",
+            maxAge: 24 * 60 * 60 * 1000 // 1 day
+        });
+        res.status(200).json({ username });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 };
 
-module.exports = { register, login };
+const logout = async (req, res) => {
+    res.clearCookie("auth_token");
+    res.status(200).json({ message: "Logged out successfully" });
+};
+
+module.exports = { register, login, logout };

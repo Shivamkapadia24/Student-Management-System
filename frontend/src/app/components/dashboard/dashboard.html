@@ -1,0 +1,17 @@
+<main class="container mb-5">
+  <div class="row g-4">
+    <section class="col-lg-4" *ngIf="showForm">
+      <app-student-form
+        [studentToEdit]="selectedStudent"
+        (cancelEdit)="onCancelEdit()">
+      </app-student-form>
+    </section>
+
+    <section [class]="showForm ? 'col-lg-8' : 'col-lg-12'">
+      <app-student-list
+        (editStudent)="onEditStudent($event)"
+        (addStudentClicked)="openAddForm()">
+      </app-student-list>
+    </section>
+  </div>
+</main>

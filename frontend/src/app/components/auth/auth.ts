@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth';
 
 @Component({
@@ -13,6 +14,7 @@ import { AuthService } from '../../services/auth';
 export class AuthComponent {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
+  private router = inject(Router);
 
   isLoginMode = true;
   errorMessage = '';
@@ -41,10 +43,11 @@ export class AuthComponent {
     authObservable.subscribe({
       next: () => {
         if (!this.isLoginMode) {
-          // Switch to login mode after successful registration
           this.isLoginMode = true;
           this.errorMessage = '';
           this.authForm.reset();
+        } else {
+          this.router.navigate(['/dashboard']);
         }
       },
       error: (err) => {

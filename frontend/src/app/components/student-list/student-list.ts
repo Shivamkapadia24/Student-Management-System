@@ -17,8 +17,23 @@ import { ChangeDetectorRef } from '@angular/core';
 export class StudentListComponent implements OnInit, OnDestroy {
 
   students: Student[] = [];
-  searchQuery = '';
-  selectedCourse = 'All';
+  
+  currentPage = 1;
+  pageSize = 5;
+
+  private _searchQuery = '';
+  get searchQuery() { return this._searchQuery; }
+  set searchQuery(value: string) {
+    this._searchQuery = value;
+    this.currentPage = 1;
+  }
+
+  private _selectedCourse = 'All';
+  get selectedCourse() { return this._selectedCourse; }
+  set selectedCourse(value: string) {
+    this._selectedCourse = value;
+    this.currentPage = 1;
+  }
 
   private subscription: Subscription = new Subscription();
 
@@ -59,6 +74,74 @@ export class StudentListComponent implements OnInit, OnDestroy {
     return ['All', ...new Set(courses)];
   }
 
+  get courseDistribution(): { course: string; count: number; percentage: number }[] {
+    const total = this.students.length;
+    if (total === 0) return [];
+
+    const counts: { [key: string]: number } = {};
+    this.students.forEach(s => {
+      if (s.course) {
+        counts[s.course] = (counts[s.course] || 0) + 1;
+      }
+    });
+
+    return Object.keys(counts).map(course => ({
+      course,
+      count: counts[course],
+      percentage: Math.round((counts[course] / total) * 100)
+    })).sort((a, b) => b.count - a.count);
+  }
+
+  get totalCoursesCount(): number {
+    const courses = this.students.map(s => s.course).filter(Boolean);
+    return new Set(courses).size;
+  }
+
+  get totalDepartmentsCount(): number {
+    const departments = new Set<string>();
+    this.students.forEach(s => {
+      if (s.course) {
+        const c = s.course.toUpperCase().trim();
+        if (c.includes('CS') || c.includes('COMP') || c.includes('IT') || c.includes('AI') || c.includes('SOFTWARE')) {
+          departments.add('Computer Engineering');
+        } else if (c.includes('ENTC') || c.includes('ELECT') || c.includes('ECE') || c.includes('TELE')) {
+          departments.add('Electronics Engineering');
+        } else if (c.includes('MECH')) {
+          departments.add('Mechanical Engineering');
+        } else if (c.includes('CIVIL')) {
+          departments.add('Civil Engineering');
+        } else {
+          departments.add(s.course);
+        }
+      }
+    });
+    return departments.size;
+  }
+
+  getCourseColorClass(course: string): string {
+    const c = course.toUpperCase().trim();
+    if (c.includes('CS') || c.includes('COMP')) return 'success';
+    if (c.includes('IT') || c.includes('INFO')) return 'primary';
+    if (c.includes('AI') || c.includes('ML')) return 'info';
+    if (c.includes('ENTC')) return 'warning';
+    return 'secondary';
+  }
+
+  get mostPopularCourse(): string {
+    if (this.students.length === 0) return 'None';
+    const dist = this.courseDistribution;
+    if (dist.length === 0) return 'None';
+    return dist[0].course;
+  }
+
+  get averageStudentsPerCourse(): number {
+    const totalStudents = this.students.length;
+    if (totalStudents === 0) return 0;
+    const totalCourses = this.totalCoursesCount;
+    if (totalCourses === 0) return 0;
+    return Math.round(totalStudents / totalCourses);
+  }
+
   get filteredStudents(): Student[] {
     let result = this.students;
 
@@ -92,6 +175,33 @@ export class StudentListComponent implements OnInit, OnDestroy {
           console.error("Failed to delete student:", err);
         }
       });
+    }
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.filteredStudents.length / this.pageSize);
+  }
+
+  get paginatedStudents(): Student[] {
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    return this.filteredStudents.slice(startIndex, startIndex + this.pageSize);
+  }
+
+  nextPage() {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+    }
+  }
+
+  prevPage() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+    }
+  }
+
+  goToPage(page: number) {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
     }
   }
 }
